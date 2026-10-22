@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: seguros-web
-          image: image-registry.openshift-image-registry.svc:5000/seguros-ibmi/seguros-web:latest
+          image: ghcr.io/grvuolo/seguros-web@sha256:fadd9d59ac254bcf7c2eb4540df60cb5b144628036df50cfdbdf459e7a687e40
           ports:
             - containerPort: 8080
           env:
