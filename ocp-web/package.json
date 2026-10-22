@@ -1,0 +1,14 @@
+{
+  "name": "seguros-web",
+  "version": "1.0.0",
+  "description": "Web de Seguros Demo en OpenShift; la logica corre en RPG en el IBM i (via seguros-api). Monitorizada con Instana.",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@instana/collector": "^4",
+    "express": "^4.21.2"
+  }
+}

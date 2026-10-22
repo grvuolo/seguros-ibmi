@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seguros Demo</title>
+
+  <!-- Instana EUM (Website Monitoring) -->
+  <script>
+    (function(s,t,a,n){s[t]||(s[t]=a,n=s[a]=function(){n.q.push(arguments)},
+    n.q=[],n.v=2,n.l=1*new Date)})(window,"InstanaEumObject","ineum");
+
+    ineum('reportingUrl', 'https://instana.tec.spgi.ibm.com:8443/eum/');
+    ineum('key', 'tkzT47uKQ-yyJTRCkGUdFg');
+    ineum('trackSessions');
+    ineum('page', 'Cartera de polizas');
+  </script>
+  <script defer crossorigin="anonymous" src="https://instana.tec.spgi.ibm.com:8443/eum/1.8.1/eum.min.js"
+    integrity="sha384-qFzHZ5BC7HOPEBSYkbYSv+DBWrG34P1QW9mIaCR41db6yOJNYmH4antW6KLkc6v1"></script>
+
+  <style>
+    :root {
+      --bg: #f4f4f4; --panel: #ffffff; --text: #161616; --muted: #525252; --line: #e0e0e0;
+      --accent: #0f62fe; --accent-text: #ffffff;
+      --ok: #198038; --ok-bg: #defbe6; --warn: #8e6a00; --warn-bg: #fcf4d6;
+      --err: #da1e28; --err-bg: #fff1f1; --tag: #e8e8e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161616; --panel: #262626; --text: #f4f4f4; --muted: #c6c6c6; --line: #393939;
+        --accent: #4589ff; --accent-text: #ffffff;
+        --ok: #42be65; --ok-bg: #044317; --warn: #f1c21b; --warn-bg: #3d3300;
+        --err: #ff8389; --err-bg: #520408; --tag: #393939;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 15px/1.45 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; }
+    header { background: var(--panel); border-bottom: 1px solid var(--line); padding: 14px 20px; }
+    header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+    main { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px;
+      padding: 16px 20px; max-width: 1280px; margin: 0 auto; }
+    @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 12px 16px; } }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; min-width: 0; }
+    h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    input, button { font: inherit; }
+    input { padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--text); min-width: 0; }
+    button { padding: 8px 14px; border: 0; border-radius: 4px; background: var(--accent); color: var(--accent-text); cursor: pointer; }
+    button.secondary { background: var(--tag); color: var(--text); }
+    button:disabled { opacity: .5; cursor: progress; }
+    .table-wrap { overflow-x: auto; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+    tbody tr { cursor: pointer; }
+    tbody tr:hover, tbody tr.sel { background: var(--bg); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+    .VIGENTE, .ACEPTADO { background: var(--ok-bg); color: var(--ok); }
+    .IMPAGO, .REVISION { background: var(--warn-bg); color: var(--warn); }
+    .ANULADA, .RECHAZADO, .ERROR { background: var(--err-bg); color: var(--err); }
+    dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0 0 16px; }
+    dt { color: var(--muted); }
+    dd { margin: 0; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .scenarios { margin: 8px 0 12px; }
+    .scenarios button { font-size: 13px; padding: 6px 10px; }
+    .result { margin-top: 12px; padding: 10px 12px; border-radius: 4px; font-size: 14px; display: none; }
+    .result.show { display: block; }
+    .result code { font-size: 12px; word-break: break-all; }
+    ul.log { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+    ul.log li { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+    .slow { color: var(--warn); font-weight: 600; }
+    .fail { color: var(--err); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Seguros Demo &middot; Siniestros</h1>
+    <p>Web en OpenShift &middot; l&oacute;gica de negocio en RPG en IBM i &middot; monitorizado con Instana</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Cartera de p&oacute;lizas</h2>
+      <form class="row" id="buscar">
+        <input id="filtro" placeholder="Buscar titular (p. ej. lopez)" aria-label="Buscar titular" style="flex:1">
+        <button type="submit">Buscar</button>
+      </form>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>P&oacute;liza</th><th>Titular</th><th>Ramo</th><th class="num">Prima</th><th>Estado</th></tr></thead>
+          <tbody id="polizas"><tr><td colspan="5" class="muted">Cargando&hellip;</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2 id="det-titulo">Detalle</h2>
+      <div id="detalle" class="muted">Selecciona una p&oacute;liza.</div>
+
+      <div id="alta" style="display:none">
+        <h2>Alta de siniestro</h2>
+        <div class="row scenarios">
+          <span class="muted">Escenarios:</span>
+          <button type="button" class="secondary" data-importe="850" data-desc="Rotura de cristal">Normal</button>
+          <button type="button" class="secondary" data-importe="15000" data-desc="Accidente en autopista">Antifraude (lento)</button>
+          <button type="button" class="secondary" data-importe="60000" data-desc="Incendio en nave industrial">Reaseguro (fallo)</button>
+        </div>
+        <form class="row" id="form-alta">
+          <input id="importe" type="number" min="1" step="0.01" placeholder="Importe" aria-label="Importe" style="width:130px">
+          <input id="descripcion" maxlength="50" placeholder="Descripci&oacute;n" aria-label="Descripci&oacute;n" style="flex:1">
+          <button type="submit" id="btn-alta">Registrar</button>
+        </form>
+        <div id="resultado" class="result" role="status"></div>
+      </div>
+    </section>
+
+    <section style="grid-column: 1 / -1">
+      <h2>Operaciones de esta sesi&oacute;n</h2>
+      <ul class="log" id="log"><li class="muted">Todav&iacute;a no hay operaciones.</li></ul>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const eur = (n) => Number(n).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const badge = (e) => `<span class="badge ${esc(e)}">${esc(e)}</span>`;
+    let seleccion = null;
+
+    async function api(method, url, body) {
+      const t0 = performance.now();
+      let status = 0, data = null;
+      try {
+        const r = await fetch(url, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+        status = r.status;
+        data = await r.json().catch(() => null);
+      } catch (e) { data = { error: e.message }; }
+      const ms = Math.round(performance.now() - t0);
+      registrar(`${method} ${url}`, status, ms);
+      return { status, data, ms };
+    }
+
+    function registrar(op, status, ms) {
+      const log = $('log');
+      if (log.firstElementChild && log.firstElementChild.classList.contains('muted')) log.innerHTML = '';
+      const li = document.createElement('li');
+      const cls = status >= 500 || status === 0 ? 'fail' : ms > 1000 ? 'slow' : '';
+      li.innerHTML = `<span>${new Date().toLocaleTimeString('es-ES')} &middot; ${esc(op)}</span><span class="${cls}">HTTP ${status || 'error'} &middot; ${ms} ms</span>`;
+      log.prepend(li);
+      while (log.children.length > 12) log.lastChild.remove();
+    }
+
+    async function cargarPolizas() {
+      const { status, data } = await api('GET', '/api/polizas?filtro=' + encodeURIComponent($('filtro').value.trim()));
+      const tb = $('polizas');
+      if (status !== 200 || !Array.isArray(data)) {
+        tb.innerHTML = `<tr><td colspan="5" class="fail">No se pudo cargar la cartera (${esc(data && (data.error || data.detalle))}).</td></tr>`;
+        return;
+      }
+      tb.innerHTML = data.length ? data.map((p) => `
+        <tr data-numpol="${esc(p.numpol)}" class="${p.numpol === seleccion ? 'sel' : ''}">
+          <td>${esc(p.numpol)}</td><td>${esc(p.titular)}</td><td>${esc(p.ramo)}</td>
+          <td class="num">${eur(p.prima)}</td><td>${badge(p.estado)}</td>
+        </tr>`).join('') : '<tr><td colspan="5" class="muted">Ninguna p&oacute;liza coincide.</td></tr>';
+    }
+
+    async function verPoliza(numpol) {
+      seleccion = numpol;
+      document.querySelectorAll('#polizas tr').forEach((tr) => tr.classList.toggle('sel', tr.dataset.numpol === numpol));
+      if (window.ineum) ineum('page', 'Detalle de poliza');
+      const { status, data } = await api('GET', '/api/polizas/' + encodeURIComponent(numpol));
+      if (status !== 200) { $('detalle').innerHTML = `<span class="fail">No se pudo leer la p&oacute;liza.</span>`; return; }
+      $('det-titulo').textContent = 'Póliza ' + data.numpol;
+      $('detalle').innerHTML = `
+        <dl>
+          <dt>Titular</dt><dd>${esc(data.titular)}</dd>
+          <dt>Ramo</dt><dd>${esc(data.ramo)}</dd>
+          <dt>Prima anual</dt><dd>${eur(data.prima)}</dd>
+          <dt>Vencimiento</dt><dd>${esc(data.vencimiento)}</dd>
+          <dt>Estado</dt><dd>${badge(data.estado)}</dd>
+          <dt>Siniestros</dt><dd>${data.siniestros} &middot; ${eur(data.importeTotal)}</dd>
+          <dt>&Uacute;ltimo</dt><dd>${esc(data.ultimoSiniestro || '—')}</dd>
+        </dl>`;
+      $('alta').style.display = '';
+      $('resultado').className = 'result';
+    }
+
+    async function altaSiniestro(ev) {
+      ev.preventDefault();
+      const importe = Number($('importe').value);
+      const descripcion = $('descripcion').value.trim();
+      const res = $('resultado');
+      if (!seleccion || !(importe > 0) || !descripcion) {
+        res.className = 'result show ERROR'; res.textContent = 'Indica importe y descripción.'; return;
+      }
+      $('btn-alta').disabled = true;
+      res.className = 'result show'; res.textContent = 'Registrando en el IBM i…';
+      const { status, data, ms } = await api('POST', `/api/polizas/${encodeURIComponent(seleccion)}/siniestros`, { importe, descripcion });
+      $('btn-alta').disabled = false;
+      const estado = (data && data.estado) || 'ERROR';
+      res.className = `result show ${estado}`;
+      res.innerHTML = `<strong>${esc(estado)}</strong> &middot; ${esc((data && (data.mensaje || data.error)) || 'Sin respuesta')} &middot; ${ms} ms (HTTP ${status})`
+        + (data && data.traceId ? `<br><span class="muted">Traza Instana:</span> <code>${esc(data.traceId.replace(/^0{16}/, ''))}</code>` : '');
+      verPoliza(seleccion);
+    }
+
+    $('buscar').addEventListener('submit', (ev) => { ev.preventDefault(); cargarPolizas(); });
+    $('polizas').addEventListener('click', (ev) => { const tr = ev.target.closest('tr[data-numpol]'); if (tr) verPoliza(tr.dataset.numpol); });
+    $('form-alta').addEventListener('submit', altaSiniestro);
+    document.querySelectorAll('.scenarios button').forEach((b) => b.addEventListener('click', () => {
+      $('importe').value = b.dataset.importe; $('descripcion').value = b.dataset.desc;
+    }));
+    cargarPolizas();
+  </script>
+</body>
+</html>

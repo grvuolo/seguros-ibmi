@@ -1,0 +1,108 @@
+     A* SEGPOLD - Seguros Demo: consulta de polizas y alta de siniestros
+     A                                      DSPSIZ(24 80 *DS3)
+     A                                      INDARA
+     A                                      PRINT
+     A          R POLSFL                    SFL
+     A            OPC            1A  B  7  3
+     A            NUMPOL        10A  O  7  6
+     A            TITULAR       28A  O  7 17
+     A            RAMO           8A  O  7 46
+     A            PRIMA         12A  O  7 55
+     A            ESTADO         8A  O  7 68
+     A  60                                  COLOR(RED)
+     A N60                                  COLOR(GRN)
+     A          R POLCTL                    SFLCTL(POLSFL)
+     A                                      SFLSIZ(0099)
+     A                                      SFLPAG(0012)
+     A  31                                  SFLDSP
+     A  32                                  SFLDSPCTL
+     A  33                                  SFLCLR
+     A  34                                  SFLEND(*MORE)
+     A                                      OVERLAY
+     A                                      CA03(03 'Salir')
+     A                                      CA05(05 'Refrescar')
+     A                                  1  2'SEGPOL'
+     A                                      COLOR(BLU)
+     A                                  1 24'Seguros Demo - Cartera de Polizas'
+     A                                      DSPATR(HI)
+     A                                  1 71DATE
+     A                                      EDTCDE(Y)
+     A                                  3  2'Buscar titular:'
+     A            BUSCAR        20A  B  3 19
+     A                                      CHECK(LC)
+     A                                  4  2'Opciones: 5=Consultar  6=Alta de s-
+     A                                      iniestro'
+     A                                      COLOR(BLU)
+     A                                  6  2'Opc Poliza     Titular            -
+     A                                                Ramo     Prima anual  Est-
+     A                                      ado'
+     A                                      COLOR(WHT)
+     A                                      DSPATR(UL)
+     A          R FOOTER
+     A                                      OVERLAY
+     A            MSG           78A  O 22  2
+     A                                      COLOR(WHT)
+     A                                 23  2'F3=Salir   F5=Refrescar   Intro=Pr-
+     A                                      ocesar'
+     A                                      COLOR(BLU)
+     A          R DETALLE
+     A                                      CA03(03 'Salir')
+     A                                      CF06(06 'Alta siniestro')
+     A                                      CA12(12 'Volver')
+     A                                  1  2'SEGPOL'
+     A                                      COLOR(BLU)
+     A                                  1 29'Detalle de Poliza'
+     A                                      DSPATR(HI)
+     A                                  1 71DATE
+     A                                      EDTCDE(Y)
+     A                                  4  4'Poliza . . . . . :'
+     A            DNUMPOL       10A  O  4 23
+     A                                  5  4'Titular  . . . . :'
+     A            DTITULAR      40A  O  5 23
+     A                                  6  4'Ramo . . . . . . :'
+     A            DRAMO         10A  O  6 23
+     A                                  7  4'Prima anual  . . :'
+     A            DPRIMA        14A  O  7 23
+     A                                  8  4'Vencimiento  . . :'
+     A            DFECVTO       10A  O  8 23
+     A                                  9  4'Estado . . . . . :'
+     A            DESTADO        8A  O  9 23
+     A  60                                  COLOR(RED)
+     A N60                                  COLOR(GRN)
+     A                                 11  4'Siniestros . . . :'
+     A            DNUMSIN        5A  O 11 23
+     A                                 12  4'Importe total  . :'
+     A            DTOTSIN       14A  O 12 23
+     A                                 14  4'Ultimo siniestro :'
+     A            DULTSIN       56A  O 14 23
+     A            DMSG          78A  O 22  2
+     A                                      COLOR(WHT)
+     A                                 23  2'F3=Salir   F6=Alta de siniestro   -
+     A                                      F12=Volver'
+     A                                      COLOR(BLU)
+     A          R ALTASIN
+     A                                      CA12(12 'Cancelar')
+     A                                  1  2'SEGPOL'
+     A                                      COLOR(BLU)
+     A                                  1 29'Alta de Siniestro'
+     A                                      DSPATR(HI)
+     A                                  4  4'Poliza . . . . . :'
+     A            ANUMPOL       10A  O  4 23
+     A                                  5  4'Titular  . . . . :'
+     A            ATITULAR      40A  O  5 23
+     A                                  7  4'Importe  . . . . :'
+     A            AIMPORTE       9Y 2B  7 23
+     A                                      EDTCDE(3)
+     A                                  8  4'Descripcion  . . :'
+     A            ADESCRIP      50A  B  8 23
+     A                                      CHECK(LC)
+     A                                 11  4'Importes superiores a 10.000 pasan-
+     A                                       por scoring antifraude.'
+     A                                      COLOR(BLU)
+     A                                 12  4'Las polizas ANULADAS se rechazan; -
+     A                                      las de IMPAGO van a revision.'
+     A                                      COLOR(BLU)
+     A            AMSG          78A  O 22  2
+     A                                      COLOR(RED)
+     A                                 23  2'Intro=Registrar   F12=Cancelar'
+     A                                      COLOR(BLU)

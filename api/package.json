@@ -1,0 +1,15 @@
+{
+  "name": "seguros-api",
+  "version": "1.0.0",
+  "description": "API REST en IBM i (PASE) sobre el procedimiento INSDEMO.SEGAPI (RPG), monitorizada con Instana",
+  "main": "server.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@instana/collector": "^4",
+    "express": "^4.21.2",
+    "idb-pconnector": "^1.1.3"
+  }
+}

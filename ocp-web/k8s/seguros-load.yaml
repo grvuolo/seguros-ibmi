@@ -1,0 +1,140 @@
+# seguros-load: generador de trafico en OCP contra seguros-web (namespace seguros-ibmi).
+# Simula usuarios llamando a la API de la web, asi todo el trafico recorre
+# OCP (seguros-web) -> IBM i (seguros-api) -> RPG (SEGAPI -> SEGVAL) -> Db2.
+# No lleva collector de Instana: las trazas empiezan en seguros-web, como con un usuario real.
+#
+# Ritmo:   PAUSA_SEGUNDOS (por defecto 15)
+# Parar:   oc scale deploy/seguros-load --replicas=0 -n seguros-ibmi
+# Mezcla:  25% listar, 30% consultar, 45% altas (75% normales, 17% antifraude >10.000,
+#          8% reaseguro >50.000); polizas aleatorias, asi que algunas altas caen en ANULADAS.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: seguros-load
+  namespace: seguros-ibmi
+  labels:
+    app: seguros-load
+data:
+  load.js: |
+    'use strict';
+    const http = require('http');
+
+    const BASE = new URL(process.env.TARGET_URL || 'http://seguros-web:8080');
+    const PAUSA_MS = Number(process.env.PAUSA_SEGUNDOS || 15) * 1000;
+    const TEXTOS = ['Golpe en aparcamiento', 'Rotura de cristal', 'Danos por agua',
+      'Robo en vivienda', 'Accidente en autopista', 'Hospitalizacion'];
+    const FILTROS = ['garcia', 'lopez', 'ruiz', 'perez', ''];
+
+    const pick = (a) => a[Math.floor(Math.random() * a.length)];
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    function llamar(method, path, body) {
+      return new Promise((resolve) => {
+        const payload = body ? JSON.stringify(body) : null;
+        const t0 = Date.now();
+        const req = http.request({
+          host: BASE.hostname, port: BASE.port || 80, method, path, timeout: 30000,
+          headers: payload ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) } : {},
+        }, (res) => {
+          let data = '';
+          res.on('data', (c) => { data += c; });
+          res.on('end', () => {
+            let json = null; try { json = JSON.parse(data); } catch (e) { /* no JSON */ }
+            resolve({ status: res.statusCode, json, ms: Date.now() - t0 });
+          });
+        });
+        req.on('timeout', () => req.destroy(new Error('timeout')));
+        req.on('error', (e) => resolve({ status: 0, json: { error: e.message }, ms: Date.now() - t0 }));
+        if (payload) req.write(payload);
+        req.end();
+      });
+    }
+
+    function importeAlta() {
+      const r = Math.random();
+      if (r < 0.08) return 50001 + Math.random() * 40000;   // reaseguro: fallo tecnico
+      if (r < 0.25) return 10001 + Math.random() * 20000;   // antifraude: lento
+      return 100 + Math.random() * 8900;                    // normal
+    }
+
+    async function main() {
+      let polizas = [];
+      for (let n = 1; ; n++) {
+        if (polizas.length === 0 || n % 50 === 0) {
+          const r = await llamar('GET', '/api/polizas?filtro=');
+          if (r.status === 200 && Array.isArray(r.json)) polizas = r.json.map((p) => p.numpol);
+        }
+        if (polizas.length === 0) { console.log('Sin polizas (IBM i no responde?), reintento'); await sleep(PAUSA_MS); continue; }
+
+        const x = Math.random();
+        let op, r;
+        if (x < 0.25) {
+          const f = pick(FILTROS);
+          op = `LISTAR ${f || '*'}`;
+          r = await llamar('GET', '/api/polizas?filtro=' + encodeURIComponent(f));
+        } else if (x < 0.55) {
+          const p = pick(polizas);
+          op = `CONSULTAR ${p}`;
+          r = await llamar('GET', '/api/polizas/' + encodeURIComponent(p));
+        } else {
+          const p = pick(polizas);
+          const importe = Math.round(importeAlta() * 100) / 100;
+          op = `ALTA ${p} ${importe}`;
+          r = await llamar('POST', `/api/polizas/${encodeURIComponent(p)}/siniestros`, { importe, descripcion: pick(TEXTOS) });
+        }
+        const estado = r.json && (r.json.estado || r.json.error) ? ` ${r.json.estado || r.json.error}` : '';
+        console.log(`${new Date().toISOString()} ${op} -> HTTP ${r.status} ${r.ms}ms${estado}`);
+        await sleep(PAUSA_MS);
+      }
+    }
+
+    main();
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seguros-load
+  namespace: seguros-ibmi
+  labels:
+    app: seguros-load
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: seguros-load
+  template:
+    metadata:
+      labels:
+        app: seguros-load
+      annotations:
+        instana-autotrace: "false"
+    spec:
+      containers:
+        - name: seguros-load
+          image: registry.access.redhat.com/ubi9/nodejs-20-minimal
+          command: ["node", "/app/load.js"]
+          env:
+            - name: TARGET_URL
+              value: http://seguros-web:8080
+            - name: PAUSA_SEGUNDOS
+              value: "15"
+          volumeMounts:
+            - name: script
+              mountPath: /app
+          resources:
+            requests:
+              cpu: 10m
+              memory: 48Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: script
+          configMap:
+            name: seguros-load
